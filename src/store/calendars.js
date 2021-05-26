@@ -28,6 +28,7 @@ import {
 	createCalendar,
 	createSubscription,
 	findAllCalendars,
+	findAllDeletedCalendars,
 	findPublicCalendarsByTokens,
 } from '../services/caldavService.js'
 import { mapCDavObjectToCalendarObject } from '../models/calendarObject'
@@ -47,6 +48,7 @@ import {
 
 const state = {
 	calendars: [],
+	deletedCalendars: [],
 	calendarsById: {},
 	initialCalendarsLoaded: false,
 }
@@ -65,6 +67,17 @@ const mutations = {
 
 		state.calendars.push(object)
 		Vue.set(state.calendarsById, object.id, object)
+	},
+
+	/**
+	 * Adds calendar into state
+	 *
+	 * @param {Object} state the store data
+	 * @param {Object} data destructuring object
+	 * @param {Object} data.calendar calendar the calendar to add
+	 */
+	addDeletedCalendar(state, { calendar }) {
+		state.deletedCalendars.push(calendar)
 	},
 
 	/**
@@ -339,6 +352,17 @@ const getters = {
 	},
 
 	/**
+	 * List of deleted sorted calendars
+	 *
+	 * @param {Object} state the store data
+	 * @returns {Array}
+	 */
+	sortedDeletedCalendars(state) {
+		return state.deletedCalendars
+			.sort((a, b) => a.order - b.order)
+	},
+
+	/**
 	 * List of sorted subscriptions
 	 *
 	 * @param {Object} state the store data
@@ -445,6 +469,26 @@ const actions = {
 
 		commit('initialCalendarsLoaded')
 		return state.calendars
+	},
+
+	/**
+	 * Retrieve and commit calendars
+	 *
+	 * @param {Object} context the store mutations
+	 * @returns {Promise<Array>} the calendars
+	 */
+	async getDeletedCalendars({ commit, state, getters }) {
+		const calendars = await findAllDeletedCalendars()
+		/*calendars.map((calendar) => mapDavCollectionToCalendar(calendar, getters.getCurrentUserPrincipal)).forEach(calendar => {
+			commit('addCalendar', { calendar })
+		})*/
+
+		//commit('initialCalendarsLoaded')
+		//return state.calendars
+
+		calendars.forEach(calendar => commit('addDeletedCalendar', { calendar }))
+
+		return state.deletedCalendars
 	},
 
 	/**

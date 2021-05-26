@@ -82,6 +82,19 @@ const findAllCalendars = () => {
 }
 
 /**
+ * Fetch all deleted calendars from the server
+ *
+ * @returns {Promise<Calendar[]>}
+ */
+const findAllDeletedCalendars = async () => {
+	const collections = await getClient()
+		.calendarHomes[0]
+		.findAll()
+	return collections
+		.filter(coll => coll._props['{DAV:}resourcetype'].includes('{http://nextcloud.com/ns}deleted-calendar'))
+}
+
+/**
  * Fetch public calendars by their token
  *
  * @param {String[]} tokens List of tokens
@@ -215,10 +228,15 @@ const findPrincipalByUrl = async(url) => {
 	return getClient().findPrincipal(url)
 }
 
+const move = async (sourceUrl, destinationUrl) => {
+	return getClient().move(sourceUrl, destinationUrl)
+}
+
 export {
 	initializeClientForUserView,
 	initializeClientForPublicView,
 	findAllCalendars,
+	findAllDeletedCalendars,
 	findPublicCalendarsByTokens,
 	findSchedulingInbox,
 	findSchedulingOutbox,
@@ -229,4 +247,5 @@ export {
 	getCurrentUserPrincipal,
 	principalPropertySearchByDisplaynameOrEmail,
 	findPrincipalByUrl,
+	move,
 }

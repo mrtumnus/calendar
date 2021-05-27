@@ -75,10 +75,24 @@ const initializeClientForPublicView = async() => {
 /**
  * Fetch all calendars from the server
  *
+ * @returns {Promise<CalendarHome>}
+ */
+const getCalendarHome = () => getClient().calendarHomes[0]
+
+/**
+ * Get the base URL of the user's calendar home
+ *
+ * @returns {Promise<string>}
+ */
+const getCalendarHomeUrl = () => getCalendarHome().url
+
+/**
+ * Fetch all calendars from the server
+ *
  * @returns {Promise<Calendar[]>}
  */
 const findAllCalendars = () => {
-	return getClient().calendarHomes[0].findAllCalendars()
+	return getCalendarHome().findAllCalendars()
 }
 
 /**
@@ -129,7 +143,7 @@ const findPublicCalendarsByTokens = async(tokens) => {
  * @returns {Promise<ScheduleInbox[]>}
  */
 const findSchedulingInbox = async() => {
-	const inboxes = await getClient().calendarHomes[0].findAllScheduleInboxes()
+	const inboxes = await getCalendarHome().findAllScheduleInboxes()
 	return inboxes[0]
 }
 
@@ -147,7 +161,7 @@ const findSchedulingInbox = async() => {
  * @returns {Promise<ScheduleOutbox>}
  */
 const findSchedulingOutbox = async() => {
-	const outboxes = await getClient().calendarHomes[0].findAllScheduleOutboxes()
+	const outboxes = await getCalendarHome().findAllScheduleOutboxes()
 	return outboxes[0]
 }
 
@@ -162,7 +176,7 @@ const findSchedulingOutbox = async() => {
  * @returns {Promise<Calendar>}
  */
 const createCalendar = async(displayName, color, components, order, timezoneIcs) => {
-	return getClient().calendarHomes[0].createCalendarCollection(displayName, color, components, order, timezoneIcs)
+	return getCalendarHome().createCalendarCollection(displayName, color, components, order, timezoneIcs)
 }
 
 /**
@@ -177,7 +191,7 @@ const createCalendar = async(displayName, color, components, order, timezoneIcs)
  * @returns {Promise<Calendar>}
  */
 const createSubscription = async(displayName, color, source, order) => {
-	return getClient().calendarHomes[0].createSubscribedCollection(displayName, color, source, order)
+	return getCalendarHome().createSubscribedCollection(displayName, color, source, order)
 }
 
 /**
@@ -186,7 +200,7 @@ const createSubscription = async(displayName, color, source, order) => {
  * @returns {Promise<Calendar>}
  */
 const enableBirthdayCalendar = async() => {
-	await getClient().calendarHomes[0].enableBirthdayCalendar()
+	await getCalendarHome().enableBirthdayCalendar()
 	return getBirthdayCalendar()
 }
 
@@ -196,7 +210,7 @@ const enableBirthdayCalendar = async() => {
  * @returns {Promise<Calendar>}
  */
 const getBirthdayCalendar = async() => {
-	return getClient().calendarHomes[0].find(CALDAV_BIRTHDAY_CALENDAR)
+	return getCalendarHome().find(CALDAV_BIRTHDAY_CALENDAR)
 }
 
 /**
@@ -235,6 +249,7 @@ const move = async (sourceUrl, destinationUrl) => {
 export {
 	initializeClientForUserView,
 	initializeClientForPublicView,
+	getCalendarHomeUrl,
 	findAllCalendars,
 	findAllDeletedCalendars,
 	findPublicCalendarsByTokens,

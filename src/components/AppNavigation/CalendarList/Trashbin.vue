@@ -37,7 +37,7 @@
 						<tr v-for="item in items">
 							<td>{{ item.name }}</td>
 							<td>{{ item.deletedAt }}</td>
-							<td><button @click="restore(item.url)">restore</button></td>
+							<td><button @click="restore(item)">restore</button></td>
 						</tr>
 					</table>
 				</div>
@@ -51,7 +51,8 @@ import AppNavigationItem from '@nextcloud/vue/dist/Components/AppNavigationItem'
 import AppNavigationCounter from '@nextcloud/vue/dist/Components/AppNavigationCounter'
 import Modal from '@nextcloud/vue/dist/Components/Modal'
 import logger from '../../../utils/logger'
-import {move} from "../../../services/caldavService";
+import {getCalendarHomeUrl, move} from "../../../services/caldavService";
+import {showError} from "@nextcloud/dialogs";
 
 export default {
 	name: 'Trashbin',
@@ -67,7 +68,6 @@ export default {
 	},
 	computed: {
 		calendars() {
-			console.info('sorted', this.$store.getters.sortedDeletedCalendars)
 			return this.$store.getters.sortedDeletedCalendars
 		},
 		objects() {
@@ -75,12 +75,15 @@ export default {
 		},
 		items() {
 			const formattedCalendars = this.calendars.map(calendar => ({
+				calendar,
+				type: 'calendar',
 				key: calendar.url,
 				name: calendar.displayname,
 				url: calendar._url,
 				deletedAt: calendar._props['{http://nextcloud.com/ns}deleted-at']
 			}))
 			const formattedCalendarObjects = this.objects.map(object => ({
+				type: 'object',
 				key: object.id,
 				name: object.summary,
 			}))
@@ -89,9 +92,25 @@ export default {
 		},
 	},
 	methods: {
-		async restore(url) {
-			logger.debug('restoring ' + url)
-			await move(url, '/remote.php/dav/calendars/admin/trashbin/restore/xyz')
+		async restore(item) {
+			logger.debug('restoring ' + item.url, item)
+			try {
+				await move(item.url, getCalendarHomeUrl() + '/trashbin/restore/xyz')
+
+				switch(item.type) {
+					case 'calendar':
+						this.$store.dispatch('removeRestoredCalendar', { calendar: item.calendar })
+						this.$store.dispatch('loadCalendars')
+						break;
+					case 'object':
+
+						break;
+				}
+			} catch (error) {
+				logger.error('could not restore ' + item.url, error)
+
+				showError(t('calendar', 'Could not restore calendar or event'))
+			}
 		}
 	}
 }

@@ -217,7 +217,7 @@ export default {
 			await initializeClientForUserView()
 			await this.$store.dispatch('fetchCurrentUserPrincipal')
 			const [calendars, deletedCalendars] = await Promise.all([
-					this.$store.dispatch('getCalendars'),
+					this.$store.dispatch('loadCalendars'),
 					this.$store.dispatch('getDeletedCalendars')
 			])
 			logger.debug('calendars loaded', { calendars, deletedCalendars })

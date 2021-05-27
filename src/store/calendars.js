@@ -65,7 +65,9 @@ const mutations = {
 	addCalendar(state, { calendar }) {
 		const object = getDefaultCalendarObject(calendar)
 
-		state.calendars.push(object)
+		if (!state.calendars.some(existing => existing.id === object.id)) {
+			state.calendars.push(object)
+		}
 		Vue.set(state.calendarsById, object.id, object)
 	},
 
@@ -78,6 +80,22 @@ const mutations = {
 	 */
 	addDeletedCalendar(state, { calendar }) {
 		state.deletedCalendars.push(calendar)
+	},
+
+	/**
+	 * Removes a deleted calendar
+	 *
+	 * @param {Object} state the store data
+	 * @param {Object} data destructuring object
+	 * @param {Object} data.calendar the calendar to delete
+	 */
+	removeDeletedCalendar(state, { calendar }) {
+		console.info({
+			calendar,
+			bef: state.deletedCalendars,
+			aft: state.deletedCalendars.filter(c => c !== calendar)
+		})
+		state.deletedCalendars = state.deletedCalendars.filter(c => c !== calendar)
 	},
 
 	/**
@@ -461,7 +479,7 @@ const actions = {
 	 * @param {Object} context the store mutations
 	 * @returns {Promise<Array>} the calendars
 	 */
-	async getCalendars({ commit, state, getters }) {
+	async loadCalendars({ commit, state, getters }) {
 		const calendars = await findAllCalendars()
 		calendars.map((calendar) => mapDavCollectionToCalendar(calendar, getters.getCurrentUserPrincipal)).forEach(calendar => {
 			commit('addCalendar', { calendar })
@@ -571,6 +589,10 @@ const actions = {
 	async deleteCalendar(context, { calendar }) {
 		await calendar.dav.delete()
 		context.commit('deleteCalendar', { calendar })
+	},
+
+	async removeRestoredCalendar(context, { calendar }) {
+		context.commit('removeDeletedCalendar', { calendar })
 	},
 
 	/**

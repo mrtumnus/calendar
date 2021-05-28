@@ -243,6 +243,9 @@ const findPrincipalByUrl = async(url) => {
 }
 
 const move = async (sourceUrl, destinationUrl) => {
+	console.info('move', {
+		client: getClient()
+	})
 	return getClient().move(sourceUrl, destinationUrl)
 }
 

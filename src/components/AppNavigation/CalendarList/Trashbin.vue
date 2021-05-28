@@ -22,13 +22,14 @@
 <template>
 	<AppNavigationItem :title="t('calendar', 'Trashbin')"
 										 :pinned="true"
-										 @click.prevent="showModal = true">
+										 @click.prevent="onShow">
 		<template #extra>
 			<Modal v-if="showModal"
 						 @close="showModal = false">
 				<div class="modal__content">
 					<h2>{{ t('calendar', 'Trashbin') }}</h2>
-					<table>
+					<span v-if="!items.length">{{ t('calendar', 'You do not have any deleted calendars or events') }}</span>
+					<table v-else>
 						<tr>
 							<th>{{ t('calendar', 'Name') }}</th>
 							<th>{{ t('calendar', 'Deleted at') }}</th>
@@ -92,6 +93,14 @@ export default {
 		},
 	},
 	methods: {
+		async onShow() {
+			this.showModal = true
+
+			await this.$store.dispatch('loadDeletedCalendars')
+			logger.debug('deleted calendars loaded', {
+				calendars: this.calendars,
+			})
+		},
 		async restore(item) {
 			logger.debug('restoring ' + item.url, item)
 			try {
@@ -107,7 +116,7 @@ export default {
 						break;
 				}
 			} catch (error) {
-				logger.error('could not restore ' + item.url, error)
+				logger.error('could not restore ' + item.url, { error })
 
 				showError(t('calendar', 'Could not restore calendar or event'))
 			}

@@ -495,14 +495,11 @@ const actions = {
 	 * @param {Object} context the store mutations
 	 * @returns {Promise<Array>} the calendars
 	 */
-	async getDeletedCalendars({ commit, state, getters }) {
+	async loadDeletedCalendars({ commit, state, getters }) {
 		const calendars = await findAllDeletedCalendars()
 		/*calendars.map((calendar) => mapDavCollectionToCalendar(calendar, getters.getCurrentUserPrincipal)).forEach(calendar => {
 			commit('addCalendar', { calendar })
 		})*/
-
-		//commit('initialCalendarsLoaded')
-		//return state.calendars
 
 		calendars.forEach(calendar => commit('addDeletedCalendar', { calendar }))
 

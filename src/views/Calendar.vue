@@ -216,11 +216,8 @@ export default {
 		} else {
 			await initializeClientForUserView()
 			await this.$store.dispatch('fetchCurrentUserPrincipal')
-			const [calendars, deletedCalendars] = await Promise.all([
-					this.$store.dispatch('loadCalendars'),
-					this.$store.dispatch('getDeletedCalendars')
-			])
-			logger.debug('calendars loaded', { calendars, deletedCalendars })
+			const calendars = await this.$store.dispatch('loadCalendars')
+			logger.debug('calendars loaded', { calendars })
 			const owners = []
 			calendars.forEach((calendar) => {
 				if (owners.indexOf(calendar.owner) === -1) {
